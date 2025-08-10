@@ -5,7 +5,9 @@ import { MapSchema } from "@colyseus/schema";
 import { MCQ } from "./components/lib/MCQ";
 import { TrueFalse } from "./components/lib/TrueFalse";
 
-const endpoint = import.meta.env.VITE_COLYSEUS_ENDPOINT || "ws://localhost:2567";
+const endpoint =
+  import.meta.env.VITE_COLYSEUS_ENDPOINT ||
+  "wss://colyseus-server-demo-production.up.railway.app";
 const ROOM_NAME = import.meta.env.VITE_ROOM_NAME || "full-llm-demo";
 
 export function App() {
@@ -18,12 +20,20 @@ export function App() {
     const client = new Client(endpoint);
     clientRef.current = client;
     (async () => {
-      const r = await client.joinOrCreate<State>(ROOM_NAME, { name: "Player" }, State);
+      const r = await client.joinOrCreate<State>(
+        ROOM_NAME,
+        { name: "Player" },
+        State
+      );
       setRoom(r);
       r.onStateChange(() => setRev((x) => x + 1));
-      r.onMessage("definition", (payload: any) => setDefinition(payload?.steps || []));
+      r.onMessage("definition", (payload: any) =>
+        setDefinition(payload?.steps || [])
+      );
     })();
-    return () => { room?.leave(); };
+    return () => {
+      room?.leave();
+    };
   }, []);
 
   const state = room?.state as State | undefined;
@@ -39,8 +49,10 @@ export function App() {
   const timeLeft = state?.extNum.get("timeLeftSec") ?? 0;
   const total = state?.extNum.get("totalSteps") ?? 0;
 
-  const sendSubmit = (correct: boolean) => room?.send("ui.event", { type: "answer.submit", correct });
-  const sendChoice = (choiceIndex: number) => room?.send("ui.event", { type: "answer.submit", choiceIndex });
+  const sendSubmit = (correct: boolean) =>
+    room?.send("ui.event", { type: "answer.submit", correct });
+  const sendChoice = (choiceIndex: number) =>
+    room?.send("ui.event", { type: "answer.submit", choiceIndex });
 
   return (
     <div className="min-h-dvh text-[--color-panel-foreground] bg-[--color-background]">
@@ -57,12 +69,19 @@ export function App() {
         {state?.phase === "question" && (
           <div className="rounded-lg bg-[--color-panel] p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <strong>Step {stepIndex + 1}/{total}</strong>
+              <strong>
+                Step {stepIndex + 1}/{total}
+              </strong>
               <div className="text-sm">Time left: {timeLeft}s</div>
             </div>
-            <div className="text-lg font-semibold">{String(step?.data?.question || "")}</div>
+            <div className="text-lg font-semibold">
+              {String(step?.data?.question || "")}
+            </div>
             {String(step?.kind) === "qcm" ? (
-              <MCQ choices={(step?.data?.choices || []) as string[]} onChoose={sendChoice} />
+              <MCQ
+                choices={(step?.data?.choices || []) as string[]}
+                onChoose={sendChoice}
+              />
             ) : (
               <TrueFalse onAnswer={sendSubmit} />
             )}
@@ -78,5 +97,3 @@ export function App() {
     </div>
   );
 }
-
-
