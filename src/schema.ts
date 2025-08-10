@@ -6,13 +6,13 @@ export class Player extends Schema {
   @type({ map: "number" }) resources = new MapSchema<number>();
 }
 
+export class Outline extends Schema {
+  @type("string") currentId: string = "intro";
+}
+
 export class Timer extends Schema {
   @type("string") id: string = "";
   @type("number") remainingMs: number = 0;
-}
-
-export class Outline extends Schema {
-  @type("string") currentId: string = "intro";
 }
 
 export class State extends Schema {

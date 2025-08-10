@@ -1,11 +1,28 @@
 import React from "react";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 
-export function TrueFalse({ onAnswer }: { onAnswer: (v: boolean) => void }) {
+interface TrueFalseProps {
+  onAnswer: (correct: boolean) => void;
+  disabled?: boolean;
+}
+
+export function TrueFalse({ onAnswer, disabled = false }: TrueFalseProps) {
   return (
-    <div className="flex gap-2">
-      <Button onClick={() => onAnswer(true)}>True</Button>
-      <Button onClick={() => onAnswer(false)} variant="secondary">
+    <div className="flex gap-4">
+      <Button
+        variant="primary"
+        className="flex-1"
+        onClick={() => onAnswer(true)}
+        disabled={disabled}
+      >
+        True
+      </Button>
+      <Button
+        variant="secondary"
+        className="flex-1"
+        onClick={() => onAnswer(false)}
+        disabled={disabled}
+      >
         False
       </Button>
     </div>
