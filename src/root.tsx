@@ -11,11 +11,8 @@ const ROOM_NAME = import.meta.env.VITE_ROOM_NAME as string;
 export function App() {
   const [definition, setDefinition] = useState<any[]>([]);
 
-  const {
-    useConnectToColyseus,
-    useColyseusRoom,
-    useColyseusState,
-  } = colyseus<State>(endpoint, State);
+  const { useConnectToColyseus, useColyseusRoom, useColyseusState } =
+    colyseus<State>(endpoint, State);
 
   useConnectToColyseus(ROOM_NAME, { name: "Player" });
 
@@ -27,11 +24,10 @@ export function App() {
     const handler = (payload: any) => setDefinition(payload?.steps || []);
     room.onMessage("definition", handler);
     return () => {
-      try {
-        // no off() API; reconnect will replace listeners when hook reconnects
-      } catch {}
+      // no off() API; reconnect will replace listeners when hook reconnects
     };
   }, [room]);
+
   const myId = room?.sessionId;
   const myScore = useMemo(() => {
     const players = state?.players as MapSchema<Player> | undefined;
