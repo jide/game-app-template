@@ -1,46 +1,43 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Client, Room } from "colyseus.js";
+import { useEffect, useMemo, useState } from "react";
 import { State, Player } from "./schema";
 import { MapSchema } from "@colyseus/schema";
 import { MCQ } from "@/components/lib/MCQ";
 import { TrueFalse } from "@/components/lib/TrueFalse";
+import { colyseus } from "@/use-colyseus";
 
 const endpoint = import.meta.env.VITE_COLYSEUS_ENDPOINT as string;
 const ROOM_NAME = import.meta.env.VITE_ROOM_NAME as string;
 
 export function App() {
-  const [room, setRoom] = useState<Room<State> | null>(null);
-  const [rev, setRev] = useState(0);
   const [definition, setDefinition] = useState<any[]>([]);
-  const clientRef = useRef<Client>(null);
+
+  const {
+    useConnectToColyseus,
+    useColyseusRoom,
+    useColyseusState,
+  } = colyseus<State>(endpoint, State);
+
+  useConnectToColyseus(ROOM_NAME, { name: "Player" });
+
+  const room = useColyseusRoom();
+  const state = useColyseusState();
 
   useEffect(() => {
-    const client = new Client(endpoint);
-    clientRef.current = client;
-    (async () => {
-      const r = await client.joinOrCreate<State>(
-        ROOM_NAME,
-        { name: "Player" },
-        State
-      );
-      setRoom(r);
-      r.onStateChange(() => setRev((x) => x + 1));
-      r.onMessage("definition", (payload: any) =>
-        setDefinition(payload?.steps || [])
-      );
-    })();
+    if (!room) return;
+    const handler = (payload: any) => setDefinition(payload?.steps || []);
+    room.onMessage("definition", handler);
     return () => {
-      room?.leave();
+      try {
+        // no off() API; reconnect will replace listeners when hook reconnects
+      } catch {}
     };
-  }, []);
-
-  const state = room?.state as State | undefined;
+  }, [room]);
   const myId = room?.sessionId;
   const myScore = useMemo(() => {
     const players = state?.players as MapSchema<Player> | undefined;
     if (!players || !myId) return 0;
     return players.get(myId)?.score || 0;
-  }, [state, myId, rev]);
+  }, [state, myId]);
 
   const stepIndex = state?.extNum.get("stepIndex") ?? 0;
   const step = definition[stepIndex];
