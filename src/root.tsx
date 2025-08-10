@@ -5,9 +5,8 @@ import { MapSchema } from "@colyseus/schema";
 import { MCQ } from "@/components/lib/MCQ";
 import { TrueFalse } from "@/components/lib/TrueFalse";
 
-// NEVER CHANGE THESE LINES.
-const endpoint = "wss://colyseus-server-demo-production.up.railway.app";
-const ROOM_NAME = "full-llm-demo";
+const endpoint = import.meta.env.VITE_COLYSEUS_ENDPOINT as string;
+const ROOM_NAME = import.meta.env.VITE_ROOM_NAME as string;
 
 export function App() {
   const [room, setRoom] = useState<Room<State> | null>(null);
